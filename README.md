@@ -2,51 +2,61 @@
 
 Interactive, zero-backend concept demo for SECURIO.
 
-## What is included
+## Covered in the demo
 
-- Guard view with assigned duty/job
-- Start / complete job workflow
-- Incident reporting
-- Demo SOS event
-- SECURIO COMMAND supervisor view
-- Client-safe status view
-- Supervisor-controlled Client Visible incident flag
-- Shared browser state using `localStorage`
+- Guard current duty imported conceptually from RosterDroid
+- Guard Start / Done job workflow
+- Selected-job point-in-time location verification
+- Incident reporting with photo/PDF attachment placeholder
+- Incident lifecycle: OPEN → ACKNOWLEDGED → UNDER_REVIEW → RESOLVED → CLOSED
+- SOS with press-and-hold confirmation concept, supervisor acknowledgement and resolution
+- SECURIO COMMAND Attention view
+- On Duty Now and Site View
+- Search across sites, guards, incidents and jobs
+- Supervisor-controlled Client Visible incidents
+- Operational activity / audit trail concept
+- Reports: in-app / PDF / scheduled email concepts
+- SECURIO CLIENT property-security-status view
+- Client privacy firewall: no guard identity, internal roster, shift details or raw GPS
+- Client → Security call and chat concept
+- Company Admin view for role controls, integration, retention and audit concepts
+- Roles: Guard / Supervisor / Company Admin / Client
+- RosterDroid shown as source of truth for roster/scheduling
+- API-first / CSV-fallback integration concept
+- Greek / English interface toggle concept
+- No AI in V1
 - Premium black/red responsive UI
+- Shared browser state using localStorage
 
-## Demo scope
+## Product rules represented
 
-This repository is intentionally a **frontend-only demo**. It does not contain production authentication, a backend, PostgreSQL, RosterDroid connectivity, real notifications, GPS verification, or emergency dispatch.
+- The existing roster system organizes the schedule. SECURIO organizes the execution.
+- Give each person only the information they need.
+- The client monitors the security status of the property, not security staff.
+- No CCTV or alarm functionality.
+- No continuous GPS tracking.
+- No automatic external emergency dispatch from SOS.
 
-The same browser stores the demo state, so you can switch between Guard, Command and Client roles and see the workflow update.
+## Important demo limitations
 
-## Run locally
+This repository is intentionally a **frontend-only simulation hosted on GitHub Pages**. It is not a production security system.
 
-Open `index.html` directly in a browser, or serve the folder with any static web server.
+It does not contain real authentication, MFA, server-side RBAC, PostgreSQL, private object storage, a live RosterDroid connector, real GPS verification, push/email/SMS/WhatsApp delivery, WebSockets, offline outbox sync, production audit immutability, data retention enforcement or emergency dispatch.
 
-Example:
+All state stays in the current browser using `localStorage`, and all names/data are simulated.
 
-```bash
-python3 -m http.server 8080
-```
+## Production architecture direction
 
-Then open `http://localhost:8080`.
-
-## GitHub Pages
-
-This project is compatible with GitHub Pages because it is plain HTML/CSS/JavaScript. If Pages is available for the repository/account, publish from the `main` branch root. If private-repository Pages is not included in the current GitHub plan, either make this demo repository public or use another free static host.
-
-## Production direction
-
-The demo should later evolve to:
-
-- Guard PWA
-- Streamlit or lightweight web SECURIO COMMAND
-- Client web portal
-- FastAPI
-- PostgreSQL
-- Private object storage
-- RosterDroid adapter
-- Proper authentication, MFA, RBAC, audit logging and tenant/site access controls
+- Guard: lightweight PWA
+- COMMAND: Streamlit or lightweight web interface
+- Client: Streamlit or lightweight web portal
+- Backend: FastAPI
+- Operational database: PostgreSQL
+- Files: private EU-region object storage with signed URLs
+- RosterDroid: connector/adapter with API discovery first and CSV fallback
+- Authentication: secure sessions/tokens, MFA for supervisors/admins, server-side RBAC and site scopes
+- Audit: immutable operational audit metadata and soft-delete/tombstone handling
+- Hosting: EU region, HTTPS, secrets management, backups, monitoring and separate dev/staging/production environments
+- BigQuery: optional later for historical reporting/analytics, not the critical operational database
 
 The demo contains no real operational or personal data.
