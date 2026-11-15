@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum Role {
+  GUARD
+  SUPERVISOR
+  CLIENT
+  COMPANY_ADMIN
+}
+
+enum JobStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+model Tenant {
+  id String @id
+  name String
+  rosterSyncedAt DateTime?
+  overdueMinutes Int @default(15)
+  site Site[]
+  users User[]
+}
+
+model Site {
+  tenantId String
+  id String
+  name String
+  phone String?
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  grants Grant[]
+  jobs Job[]
+  @@id([tenantId,id])
+}
+
+model User {
+  tenantId String
+  id String @default(uuid())
+  email String @unique
+  name String
+  passwordHash String
+  role Role
+  enabled Boolean @default(true)
+  mfaCiphertext String?
+  mfaStep BigInt @default(-1)
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  sessions Session[]
+  grants Grant[]
+  jobs Job[]
+  @@id([tenantId,id])
+}
+
+model Grant {
+  tenantId String
+  siteId String
+  userId String
+  site Site @relation(fields: [tenantId,siteId], references: [tenantId,id])
+  user User @relation(fields: [tenantId,userId], references: [tenantId,id])
+  @@id([tenantId,siteId,userId])
+}
+
+model Session {
+  tokenHash String @id
+  tenantId String
+  userId String
+  expiresAt DateTime
+  user User @relation(fields: [tenantId,userId], references: [tenantId,id], onDelete: Cascade)
+  @@index([expiresAt])
+}
+
+model LoginLimit {
+  key String
+  bucket Int
+  attempts Int @default(1)
+  @@id([key,bucket])
+  @@index([bucket])
+}
+
+model Job {
+  tenantId String
+  id String
+  siteId String
+  guardId String
+  assignmentRef String
+  title String
+  dutyStart DateTime
+  dutyEnd DateTime
+  dueAt DateTime
+  cancelled Boolean @default(false)
+  status JobStatus @default(SCHEDULED)
+  startedAt DateTime?
+  doneAt DateTime?
+  site Site @relation(fields: [tenantId,siteId], references: [tenantId,id])
+  guard User @relation(fields: [tenantId,guardId], references: [tenantId,id])
+  @@id([tenantId,id])
+  @@index([tenantId,siteId,dueAt])
+  @@index([tenantId,guardId,dutyStart])
+}
+
+model Incident {
+  tenantId String
+  id String @default(uuid())
+  siteId String
+  guardId String
+  category String
+  description String
+  status String @default("OPEN")
+  clientSummary String?
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  @@id([tenantId,id])
+  @@index([tenantId,siteId,createdAt])
+}
+
+model Sos {
+  tenantId String
+  id String @default(uuid())
+  siteId String
+  guardId String
+  status String @default("DELIVERED")
+  createdAt DateTime @default(now())
+  @@id([tenantId,id])
+  @@index([tenantId,siteId,createdAt])
+}
+
+model Message {
+  tenantId String
+  id String @default(uuid())
+  siteId String
+  clientId String
+  fromSecurity Boolean
+  body String
+  createdAt DateTime @default(now())
+  @@id([tenantId,id])
+  @@index([tenantId,siteId,clientId,createdAt])
+}
+
+model Audit {
+  id BigInt @id @default(autoincrement())
+  tenantId String
+  siteId String?
+  actorId String
+  action String
+  reason String?
+  entityId String
+  occurredAt DateTime @default(now())
+  @@index([tenantId,siteId,occurredAt])
+}
+
+model Receipt {
+  tenantId String
+  actorId String
+  operationId String
+  resourceId String
+  kind String
+  createdAt DateTime @default(now())
+  @@id([tenantId,actorId,operationId])
+}
