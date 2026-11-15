@@ -39,5 +39,8 @@
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "deepmerge-ts": "8.0.0"
+  }
 }
