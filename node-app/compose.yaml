@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: securio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: securio
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U securio -d securio]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+  migrate:
+    image: securio-node:local
+    build: .
+    command: [npm, exec, --, prisma, migrate, deploy]
+    environment: &database
+      DATABASE_URL: postgresql://securio:${POSTGRES_PASSWORD}@db:5432/securio
+    depends_on:
+      db:
+        condition: service_healthy
+  app:
+    image: securio-node:local
+    environment:
+      <<: *database
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      MFA_KEY: ${MFA_KEY:?Set MFA_KEY}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  postgres:
